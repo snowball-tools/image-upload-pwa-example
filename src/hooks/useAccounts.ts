@@ -12,7 +12,7 @@ import { encryptString, decryptToString } from "@lit-protocol/lit-node-client";
 
 const litAuthClient: LitAuthClient = new LitAuthClient({
   litRelayConfig: {
-    relayApiKey: "",
+    relayApiKey: "15DDD969-E75F-404D-AAD9-58A37C4FD354_snowball",
   },
 });
 
@@ -48,7 +48,7 @@ export const useAccounts = () => {
 
         const provider = litAuthClient.initProvider(ProviderType.StytchOtp, {
           userId,
-          appId: "",
+          appId: "project-test-5bbaefc1-6145-4e14-8cca-8a4e154d599a",
         });
 
         const authMethod = await provider.authenticate({
@@ -121,7 +121,7 @@ export const useAccounts = () => {
           dataToEncrypt,
           chain: "ethereum",
         },
-        provider!.litNodeClient,
+        provider!.litNodeClient as any,
       );
 
       return result;
@@ -153,7 +153,7 @@ export const useAccounts = () => {
               dataToEncryptHash,
               chain: "ethereum",
             },
-            provider.litNodeClient,
+            provider.litNodeClient as any,
           )
 
           return result;

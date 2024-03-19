@@ -2,6 +2,9 @@ import React from "react";
 import ReactDOM from "react-dom/client";
 import App from "./components/App.tsx";
 import { useRegisterSW } from "virtual:pwa-register/react";
+import { StytchProvider } from '@stytch/react';
+import { StytchUIClient } from '@stytch/vanilla-js';
+
 import "./index.css";
 
 const AppUpdater = () => {
@@ -30,9 +33,13 @@ const AppUpdater = () => {
   return null;
 };
 
+const stytchClient = new StytchUIClient("public-token-test-fb7aa946-fb42-46be-95ae-63505c0c5ff8");
+
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
-    <App />
+    <StytchProvider stytch={stytchClient}>
+      <App />
+    </StytchProvider>
     <AppUpdater />
   </React.StrictMode>,
 );
