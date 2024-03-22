@@ -1,15 +1,11 @@
 import React from "react";
 import { CameraIcon } from "@heroicons/react/24/solid";
 
-const UploadButton = ({
-  isLoading,
-  handleImageChange,
-  fileInputRef,
-}: {
-  isLoading: boolean;
-  handleImageChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  fileInputRef: React.RefObject<HTMLInputElement>;
-}) => {
+const UploadButton: React.FC<{
+    isLoading: boolean;
+    handleImageChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+    fileInputRef: React.RefObject<HTMLInputElement>;
+	}> = ({ isLoading, handleImageChange, fileInputRef }) => {
   return (
     <div className="fixed bottom-10 left-1/2 transform -translate-x-1/2 flex justify-center">
       {isLoading ? (
