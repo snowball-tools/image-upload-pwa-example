@@ -26,7 +26,7 @@ function useImageStorage() {
 			};
 
 			request.onsuccess = (event) => {
-				setDb((event.target as IDBOpenDBRequest).result as IDBDatabase);
+				setDb((event.target as IDBOpenDBRequest).result);
 			};
 
 			request.onerror = (event) => {

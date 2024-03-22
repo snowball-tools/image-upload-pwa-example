@@ -10,25 +10,33 @@ import "./index.css";
 const AppUpdater: React.FC = () => {
   const intervalMS = 1000 * 60 * 60 // 1 hour;
 
-  useRegisterSW({
-    onRegisteredSW(swUrl, r) {
-      r &&
-        setInterval(async () => {
-          if (!(!r.installing && navigator)) return;
-          if ("connection" in navigator && !navigator.onLine) return;
+	useRegisterSW({
+		onRegisteredSW(serviceWorkerUrl: string, serviceWorkerRegistration: ServiceWorkerRegistration | undefined) {
+			if (!serviceWorkerRegistration) return;
 
-          const resp = await fetch(swUrl, {
-            cache: "no-store",
-            headers: {
-              cache: "no-store",
-              "cache-control": "no-cache",
-            },
-          });
+			setInterval(() => {
+				(async () => {
+					if (serviceWorkerRegistration.installing ?? !navigator) return;
+					if ("connection" in navigator && !navigator.onLine) return;
 
-          if (resp?.status === 200) await r.update();
-        }, intervalMS);
-    },
-  });
+					try {
+						const resp = await fetch(serviceWorkerUrl, {
+							cache: "no-store",
+							headers: {
+								"cache-control": "no-cache",
+							},
+						});
+
+						if (resp.status === 200) {
+							await serviceWorkerRegistration.update();
+						}
+					} catch (error) {
+						console.error("Error updating service worker:", error);
+					}
+				})(); // Execute the IIFE
+			}, intervalMS);
+		},
+	});
 
   return null;
 };
