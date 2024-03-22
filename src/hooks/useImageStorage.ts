@@ -60,7 +60,11 @@ function useImageStorage() {
 				resolve(imageRecord);
 			};
 			tx.onerror = () => {
-				reject(new ImageStorageError("[storeImage] failed to record image. ${tx.error}"));
+				reject(
+					new ImageStorageError(
+						"[storeImage] failed to record image. ${tx.error}",
+					),
+				);
 			};
 		});
 	}
@@ -70,8 +74,8 @@ function useImageStorage() {
 			throw new Error("IndexDB is not initialized.");
 		}
 
-    const tx = db.transaction("images", "readonly");
-    const store = tx.objectStore("images");
+		const tx = db.transaction("images", "readonly");
+		const store = tx.objectStore("images");
 
 		return new Promise<ImageRecord[]>((resolve, reject) => {
 			const request = store.getAll();
@@ -86,7 +90,11 @@ function useImageStorage() {
 				);
 			};
 			request.onerror = () => {
-				reject(new ImageStorageError("[fetchImages] failed. ${request.error.message}"));
+				reject(
+					new ImageStorageError(
+						"[fetchImages] failed. ${request.error.message}",
+					),
+				);
 			};
 		});
 	}
