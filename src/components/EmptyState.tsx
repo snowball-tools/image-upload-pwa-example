@@ -1,6 +1,7 @@
+import React from "react";
 import { CameraIcon } from "@heroicons/react/24/solid";
 
-const EmptyState = () => (
+const EmptyState: React.FC = () => (
   <div className="fixed inset-0 flex justify-center items-center p-4">
     <div className="text-center">
       <CameraIcon className="mx-auto h-12 w-12 text-gray-400" />
