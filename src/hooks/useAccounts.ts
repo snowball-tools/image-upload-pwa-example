@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react";
-import { LitAuthClient } from "@lit-protocol/lit-auth-client";
+import { BaseProvider, LitAuthClient } from "@lit-protocol/lit-auth-client";
 import { ProviderType, AuthMethodType } from "@lit-protocol/constants";
 import {
   IRelayPKP,
   IRelayPollStatusResponse,
   AuthMethod,
+  SessionSigs,
 } from "@lit-protocol/types";
 import { useStytchUser, useStytch } from "@stytch/react";
 import { LitAbility, LitActionResource } from "@lit-protocol/auth-helpers";
@@ -31,135 +32,152 @@ const accessControlConditions = [
 ];
 
 export const useAccounts = () => {
-  const { user } = useStytchUser();
-  const stytch = useStytch();
-  const [authMethod, setAuthMethod] = useState<AuthMethod>();
-  const [pkps, setPkps] = useState<IRelayPKP[] | IRelayPollStatusResponse[]>(
-    [],
-  );
+	const { user } = useStytchUser();
+	const stytch = useStytch();
+	const [authMethod, setAuthMethod] = useState<AuthMethod>();
+	const [pkps, setPkps] = useState<IRelayPKP[] | IRelayPollStatusResponse[]>(
+		[],
+	);
 
-  useEffect(() => {
-    async function handle() {
-      if (stytch && user && !authMethod && !pkps.length) {
-        const a = stytch.session.getTokens();
-        const s = stytch.session.getSync();
-        const userId = s?.user_id;
-        const accessToken = a?.session_jwt;
+	useEffect(() => {
+		async function handle() {
+			if (user && !authMethod && !pkps.length) {
+				const a = stytch.session.getTokens();
+				const s = stytch.session.getSync();
+				const userId = s?.user_id;
+				const accessToken = a?.session_jwt;
 
-        const provider = litAuthClient.initProvider(ProviderType.StytchOtp, {
-          userId,
-          appId: "project-test-5bbaefc1-6145-4e14-8cca-8a4e154d599a",
-        });
+				const provider = litAuthClient.initProvider(ProviderType.StytchOtp, {
+					userId,
+					appId: "project-test-5bbaefc1-6145-4e14-8cca-8a4e154d599a",
+				});
 
-        const authMethod = await provider.authenticate({
-          accessToken,
-        });
+				const authMethod = await provider.authenticate({
+					accessToken,
+				});
 
-        setAuthMethod(authMethod);
+				setAuthMethod(authMethod);
 
-        const allPKPs = await provider.fetchPKPsThroughRelayer(authMethod);
+				const allPKPs = await provider.fetchPKPsThroughRelayer(authMethod);
 
-        // check if we have pkps, if we dont then create one
-        let pkps = [];
-        if (allPKPs.length === 0) {
-          const pkp = await provider.relay.pollRequestUntilTerminalState(
-            await provider.mintPKPThroughRelayer(authMethod),
-          );
-          pkps = [pkp];
-        } else {
-          pkps = allPKPs;
-        }
+				// check if we have pkps, if we dont then create one
+				let pkps = [];
+				if (allPKPs.length === 0) {
+					const pkp = await provider.relay.pollRequestUntilTerminalState(
+						await provider.mintPKPThroughRelayer(authMethod),
+					);
+					pkps = [pkp];
+				} else {
+					pkps = allPKPs;
+				}
 
-        setPkps(pkps);
-      }
-    }
-    handle();
-  }, [stytch, user, authMethod, pkps]);
+				setPkps(pkps);
+			}
+		}
+		handle();
+	}, [stytch, user, authMethod, pkps]);
 
-  function getProviderByAuthMethod(authMethod: AuthMethod) {
-    switch (authMethod.authMethodType) {
-      case AuthMethodType.GoogleJwt:
-        return litAuthClient.getProvider(ProviderType.Google);
-      case AuthMethodType.Discord:
-        return litAuthClient.getProvider(ProviderType.Discord);
-      case AuthMethodType.EthWallet:
-        return litAuthClient.getProvider(ProviderType.EthWallet);
-      case AuthMethodType.WebAuthn:
-        return litAuthClient.getProvider(ProviderType.WebAuthn);
-      case AuthMethodType.StytchEmailFactorOtp:
-        return litAuthClient.getProvider(ProviderType.StytchEmailFactorOtp);
-      case AuthMethodType.StytchSmsFactorOtp:
-        return litAuthClient.getProvider(ProviderType.StytchSmsFactorOtp);
-      case AuthMethodType.StytchOtp:
-        return litAuthClient.getProvider(ProviderType.StytchOtp);
-      default:
-        return;
-    }
-  }
+	function getProviderByAuthMethod(
+		authMethod: AuthMethod,
+	): BaseProvider | undefined {
+		switch (authMethod.authMethodType) {
+			case AuthMethodType.GoogleJwt:
+				return litAuthClient.getProvider(ProviderType.Google);
+			case AuthMethodType.Discord:
+				return litAuthClient.getProvider(ProviderType.Discord);
+			case AuthMethodType.EthWallet:
+				return litAuthClient.getProvider(ProviderType.EthWallet);
+			case AuthMethodType.WebAuthn:
+				return litAuthClient.getProvider(ProviderType.WebAuthn);
+			case AuthMethodType.StytchEmailFactorOtp:
+				return litAuthClient.getProvider(ProviderType.StytchEmailFactorOtp);
+			case AuthMethodType.StytchSmsFactorOtp:
+				return litAuthClient.getProvider(ProviderType.StytchSmsFactorOtp);
+			case AuthMethodType.StytchOtp:
+				return litAuthClient.getProvider(ProviderType.StytchOtp);
+			default:
+				return undefined;
+		}
+	}
 
-  const encrypt = async (dataToEncrypt: string) => {
-    if (authMethod) {
-      const provider = getProviderByAuthMethod(authMethod);
-      const sessionSigs = await provider!.getSessionSigs({
-        authMethod,
-        pkpPublicKey: (pkps[0] as any).publicKey,
-        sessionSigsParams: {
-          chain: "ethereum",
-          resourceAbilityRequests: [
-            {
-              resource: new LitActionResource("*"),
-              ability: LitAbility.PKPSigning,
-            },
-          ],
-        },
-      });
+	const encrypt = async (dataToEncrypt: string) => {
+		if (authMethod) {
+			const provider = getProviderByAuthMethod(authMethod);
+			const pkp = (pkps[0] as IRelayPKP).publicKey
+				? (pkps[0] as IRelayPKP).publicKey
+				: (pkps[0] as IRelayPollStatusResponse).pkpPublicKey;
 
-      const result = await encryptString(
-        {
-          sessionSigs,
-          accessControlConditions,
-          dataToEncrypt,
-          chain: "ethereum",
-        },
-        provider!.litNodeClient as any,
-      );
+			if (!provider || !pkp) {
+				return;
+			}
 
-      return result;
-    }
-  };
+			const sessionSigs = await provider.getSessionSigs({
+				authMethod,
+				pkpPublicKey: pkp,
+				sessionSigsParams: {
+					chain: "ethereum",
+					resourceAbilityRequests: [
+						{
+							resource: new LitActionResource("*"),
+							ability: LitAbility.PKPSigning,
+						},
+					],
+				},
+			});
 
-  const decrypt = async (ciphertext: string, dataToEncryptHash: string) => {
-    if (authMethod) {
-      const provider = getProviderByAuthMethod(authMethod);
-      const sessionSigs = await provider?.getSessionSigs({
-        authMethod,
-        pkpPublicKey: (pkps[0] as any).publicKey,
-        sessionSigsParams: {
-          chain: "ethereum",
-          resourceAbilityRequests: [
-            {
-              resource: new LitActionResource("*"),
-              ability: LitAbility.PKPSigning,
-            },
-          ],
-        },
-      });
-      if (sessionSigs && provider) {
-        const result = await decryptToString(
-            {
-              sessionSigs,
-              accessControlConditions,
-              ciphertext,
-              dataToEncryptHash,
-              chain: "ethereum",
-            },
-            provider.litNodeClient as any,
-          )
+			const result = await encryptString(
+				{
+					sessionSigs,
+					accessControlConditions,
+					dataToEncrypt,
+					chain: "ethereum",
+				},
+				provider.litNodeClient,
+			);
 
-          return result;
-      }
-    }
-  };
+			return result;
+		}
+	};
 
-  return { authMethod, pkps, encrypt, decrypt };
+	const decrypt = async (ciphertext: string, dataToEncryptHash: string) => {
+		if (authMethod) {
+			const provider = getProviderByAuthMethod(authMethod);
+			const pkp = (pkps[0] as IRelayPKP).publicKey
+				? (pkps[0] as IRelayPKP).publicKey
+				: (pkps[0] as IRelayPollStatusResponse).pkpPublicKey;
+			if (!provider || !pkp) {
+				return;
+			}
+
+			const sessionSigs: SessionSigs = await provider.getSessionSigs({
+				authMethod,
+				pkpPublicKey: pkp,
+				sessionSigsParams: {
+					chain: "ethereum",
+					resourceAbilityRequests: [
+						{
+							resource: new LitActionResource("*"),
+							ability: LitAbility.PKPSigning,
+						},
+					],
+				},
+			});
+			if (Object.keys(sessionSigs).length !== 0) {
+				const result = await decryptToString(
+					{
+						sessionSigs,
+						accessControlConditions,
+						ciphertext,
+						dataToEncryptHash,
+						chain: "ethereum",
+					},
+					provider.litNodeClient,
+				);
+
+				return result;
+			}
+		}
+	};
+
+	return { authMethod, pkps, encrypt, decrypt };
 };
