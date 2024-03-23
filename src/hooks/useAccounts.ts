@@ -2,33 +2,33 @@ import { useEffect, useState } from "react";
 import { BaseProvider, LitAuthClient } from "@lit-protocol/lit-auth-client";
 import { ProviderType, AuthMethodType } from "@lit-protocol/constants";
 import {
-  IRelayPKP,
-  IRelayPollStatusResponse,
-  AuthMethod,
-  SessionSigs,
+	IRelayPKP,
+	IRelayPollStatusResponse,
+	AuthMethod,
+	SessionSigs,
 } from "@lit-protocol/types";
 import { useStytchUser, useStytch } from "@stytch/react";
 import { LitAbility, LitActionResource } from "@lit-protocol/auth-helpers";
 import { encryptString, decryptToString } from "@lit-protocol/lit-node-client";
 
 const litAuthClient: LitAuthClient = new LitAuthClient({
-  litRelayConfig: {
-    relayApiKey: "15DDD969-E75F-404D-AAD9-58A37C4FD354_snowball",
-  },
+	litRelayConfig: {
+		relayApiKey: "15DDD969-E75F-404D-AAD9-58A37C4FD354_snowball",
+	},
 });
 
 const accessControlConditions = [
-  {
-    contractAddress: "",
-    standardContractType: "",
-    chain: "ethereum",
-    method: "eth_getBalance",
-    parameters: [":userAddress", "latest"],
-    returnValueTest: {
-      comparator: ">=",
-      value: "0", // 0 ETH, so anyone can open
-    },
-  },
+	{
+		contractAddress: "",
+		standardContractType: "",
+		chain: "ethereum",
+		method: "eth_getBalance",
+		parameters: [":userAddress", "latest"],
+		returnValueTest: {
+			comparator: ">=",
+			value: "0", // 0 ETH, so anyone can open
+		},
+	},
 ];
 
 export const useAccounts = () => {
