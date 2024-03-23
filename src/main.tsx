@@ -34,12 +34,15 @@ const AppUpdater: React.FC = () => {
 };
 
 const stytchClient = new StytchUIClient("public-token-test-fb7aa946-fb42-46be-95ae-63505c0c5ff8");
+const rootElement = document.getElementById("root");
 
-ReactDOM.createRoot(document.getElementById("root")!).render(
-  <React.StrictMode>
-    <StytchProvider stytch={stytchClient}>
-      <App />
-    </StytchProvider>
-    <AppUpdater />
-  </React.StrictMode>,
-);
+rootElement
+	? ReactDOM.createRoot(rootElement).render(
+			<React.StrictMode>
+				<StytchProvider stytch={stytchClient}>
+					<App />
+				</StytchProvider>
+				<AppUpdater />
+			</React.StrictMode>,
+		)
+	: console.log("Root element not found");
