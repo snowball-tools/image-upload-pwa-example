@@ -20,7 +20,7 @@ const UploadPreviewModal: React.FC<{
 
   return (
     <div
-      className={`fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-center items-center p-4 ${!isOpen && "hidden"}`}
+      className={`fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-center items-center p-4 ${!isOpen ? "hidden" : ""}`}
     >
       {isOpen && (
         <div className="bg-white rounded-lg p-5 max-w-3xl w-full mx-auto">
@@ -36,13 +36,13 @@ const UploadPreviewModal: React.FC<{
                   type="text"
                   placeholder="Title"
                   value={localTitle}
-                  onChange={(e) => setLocalTitle(e.target.value)}
+                  onChange={(e) => { setLocalTitle(e.target.value); }}
                   className="text-lg font-semibold w-full rounded mb-1 p-2"
                 />
                 <textarea
                   placeholder="Description"
                   value={localDescription}
-                  onChange={(e) => setLocalDescription(e.target.value)}
+                  onChange={(e) => { setLocalDescription(e.target.value); }}
                   className="text-gray-600 w-full rounded mb-4 p-2"
                 />
               </div>
@@ -50,7 +50,7 @@ const UploadPreviewModal: React.FC<{
           )}
           <div className="flex justify-between">
             <button
-              onClick={() => onSubmit(localTitle, localDescription)}
+              onClick={() => { onSubmit(localTitle, localDescription); }}
               className="bg-blue-500 text-white font-bold py-2 px-4 rounded"
             >
               Upload Image
