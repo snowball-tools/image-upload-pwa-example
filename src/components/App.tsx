@@ -1,10 +1,11 @@
 import React, { useState, useEffect, useRef } from "react";
 
-import { useAccounts, useImageStorage, ImageRecord } from "../hooks";
+import { useAccounts, useImageStorage } from "../hooks";
 import UploadPreviewModal from "./UploadPreviewModal";
 import UploadButton from "./UploadButton";
 import EmptyState from "./EmptyState";
 import ImageCard from "./ImageCard";
+import { ImageRecord } from "../types";
 
 const App: React.FC = () => {
 	const [images, setImages] = useState<ImageRecord[]>([]);
@@ -14,7 +15,7 @@ const App: React.FC = () => {
 	const { storeImage, fetchImages, isLoading } = useImageStorage();
 	const fileInputRef = useRef<HTMLInputElement>(null);
 
-	const t = useAccounts();
+	const accountHook = useAccounts();
 
 	useEffect(() => {
 		if (!isLoading) {
@@ -45,7 +46,7 @@ const App: React.FC = () => {
 	// eslint-disable-next-line @typescript-eslint/no-unused-vars
 	const uploadImage = async (title?: string, _description?: string) => {
 		if (selectedFile) {
-			const encrypted = await t.encrypt(title ?? "no title");
+			const encrypted = await accountHook.encrypt(title ?? "no title");
 			await storeImage(selectedFile, title, JSON.stringify(encrypted));
 			const updatedImages = await fetchImages();
 			setImages(updatedImages);
@@ -71,7 +72,9 @@ const App: React.FC = () => {
 			{/* Main Content */}
 			<div className="flex-grow p-5 overflow-y-auto mt-12 mb-8">
 				<div className="mt-5 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
-					{images.length === 0 || !t.authMethod || !t.pkps.length ? (
+					{images.length === 0 ||
+					!accountHook.authMethod ||
+					!accountHook.pkps.length ? (
 						<EmptyState />
 					) : (
 						images.map((image, index) => (
@@ -79,7 +82,7 @@ const App: React.FC = () => {
 								key={index}
 								image={image}
 								index={index}
-								decrypt={t.decrypt}
+								decrypt={accountHook.decrypt}
 							/>
 						))
 					)}

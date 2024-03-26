@@ -5,19 +5,13 @@ import {
 	IRelayPKP,
 	IRelayPollStatusResponse,
 	AuthMethod,
-	SessionSigs,
+	AccessControlConditions,
 } from "@lit-protocol/types";
 import { useStytchUser, useStytch } from "@stytch/react";
-import { LitAbility, LitActionResource } from "@lit-protocol/auth-helpers";
-import { encryptString, decryptToString } from "@lit-protocol/lit-node-client";
+import { useEncryption } from "./useEncryption";
+import { Operations } from "../types";
 
-const litAuthClient: LitAuthClient = new LitAuthClient({
-	litRelayConfig: {
-		relayApiKey: "15DDD969-E75F-404D-AAD9-58A37C4FD354_snowball",
-	},
-});
-
-const accessControlConditions = [
+const accessControlConditions: AccessControlConditions = [
 	{
 		contractAddress: "",
 		standardContractType: "",
@@ -31,6 +25,12 @@ const accessControlConditions = [
 	},
 ];
 
+const litAuthClient: LitAuthClient = new LitAuthClient({
+	litRelayConfig: {
+		relayApiKey: "15DDD969-E75F-404D-AAD9-58A37C4FD354_snowball",
+	},
+});
+
 export const useAccounts = () => {
 	const { user } = useStytchUser();
 	const stytch = useStytch();
@@ -38,6 +38,7 @@ export const useAccounts = () => {
 	const [pkps, setPkps] = useState<IRelayPKP[] | IRelayPollStatusResponse[]>(
 		[],
 	);
+	const { performOperation } = useEncryption();
 
 	useEffect(() => {
 		async function handle() {
@@ -111,71 +112,39 @@ export const useAccounts = () => {
 				return;
 			}
 
-			const sessionSigs = await provider.getSessionSigs({
+			const encrypted = await performOperation(Operations.encrypt, {
+				provider,
+				pkp,
+				dataToEncrypt,
 				authMethod,
-				pkpPublicKey: pkp,
-				sessionSigsParams: {
-					chain: "ethereum",
-					resourceAbilityRequests: [
-						{
-							resource: new LitActionResource("*"),
-							ability: LitAbility.PKPSigning,
-						},
-					],
-				},
+				accessControlConditions,
 			});
 
-			const result = await encryptString(
-				{
-					sessionSigs,
-					accessControlConditions,
-					dataToEncrypt,
-					chain: "ethereum",
-				},
-				provider.litNodeClient,
-			);
-
-			return result;
+			return encrypted;
 		}
 	};
 
-	const decrypt = async (ciphertext: string, dataToEncryptHash: string) => {
+	const decrypt = async (ciphertext: string, dataToDecryptHash: string) => {
 		if (authMethod) {
 			const provider = getProviderByAuthMethod(authMethod);
 			const pkp = (pkps[0] as IRelayPKP).publicKey
 				? (pkps[0] as IRelayPKP).publicKey
 				: (pkps[0] as IRelayPollStatusResponse).pkpPublicKey;
+
 			if (!provider || !pkp) {
 				return;
 			}
 
-			const sessionSigs: SessionSigs = await provider.getSessionSigs({
+			const decrypted = await performOperation(Operations.decrypt, {
+				provider,
+				pkp,
 				authMethod,
-				pkpPublicKey: pkp,
-				sessionSigsParams: {
-					chain: "ethereum",
-					resourceAbilityRequests: [
-						{
-							resource: new LitActionResource("*"),
-							ability: LitAbility.PKPSigning,
-						},
-					],
-				},
+				accessControlConditions,
+				dataToDecryptHash,
+				ciphertext,
 			});
-			if (Object.keys(sessionSigs).length !== 0) {
-				const result = await decryptToString(
-					{
-						sessionSigs,
-						accessControlConditions,
-						ciphertext,
-						dataToEncryptHash,
-						chain: "ethereum",
-					},
-					provider.litNodeClient,
-				);
 
-				return result;
-			}
+			return decrypted;
 		}
 	};
 

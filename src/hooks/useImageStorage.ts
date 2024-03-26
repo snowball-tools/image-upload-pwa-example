@@ -1,13 +1,7 @@
 import { useState, useEffect } from "react";
 
 import { ImageStorageError } from "../utils/CustomError";
-
-export interface ImageRecord {
-	url: string;
-	title?: string;
-	description?: string;
-	timestamp?: Date;
-}
+import { ImageRecord } from "../types";
 
 function useImageStorage() {
 	const [db, setDb] = useState<IDBDatabase | undefined | null>(null);
