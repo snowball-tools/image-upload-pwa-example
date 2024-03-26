@@ -1,19 +1,12 @@
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
+
 import { ImageRecord } from "../hooks/useImageStorage";
 
-const ImageCard = ({
+const ImageCard: React.FC<{ image: ImageRecord; index: number, decrypt: (ciphertext: string, dataToEncryptHash: string) => Promise<string | undefined> }> = ({
   image,
   index,
   decrypt,
-}: {
-  image: ImageRecord;
-  index: number;
-  decrypt: (
-    ciphertext: string,
-    dataToEncryptHash: string,
-  ) => Promise<string | undefined>;
 }) => {
-
   const [text, setText] = useState<string | undefined>();
 
   useEffect(() => {

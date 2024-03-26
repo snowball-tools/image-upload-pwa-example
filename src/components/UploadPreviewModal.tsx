@@ -1,16 +1,11 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 
-const UploadPreviewModal = ({
-  isOpen,
-  onSubmit,
-  onCancel,
-  preview,
-}: {
+const UploadPreviewModal: React.FC<{
   isOpen: boolean;
+  preview: string | null;
   onSubmit: (title?: string, description?: string) => void;
   onCancel: () => void;
-  preview: string | null;
-}) => {
+}> = ({ isOpen, preview, onSubmit, onCancel }) => {
   const [localTitle, setLocalTitle] = useState<string | undefined>();
   const [localDescription, setLocalDescription] = useState<
     string | undefined
