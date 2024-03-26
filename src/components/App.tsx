@@ -1,11 +1,12 @@
-import { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef } from "react";
+
+import { useAccounts, useImageStorage, ImageRecord } from "../hooks";
 import UploadPreviewModal from "./UploadPreviewModal";
 import UploadButton from "./UploadButton";
 import EmptyState from "./EmptyState";
 import ImageCard from "./ImageCard";
-import { useAccounts, useImageStorage, ImageRecord } from "../hooks";
 
-const App = () => {
+const App: React.FC = () => {
   const [images, setImages] = useState<ImageRecord[]>([]);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
