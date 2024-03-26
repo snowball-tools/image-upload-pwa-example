@@ -32,7 +32,7 @@ const App: React.FC = () => {
     setPreview(objectUrl);
     setIsModalOpen(true);
 
-    return () => URL.revokeObjectURL(objectUrl);
+    return () => { URL.revokeObjectURL(objectUrl); };
   }, [selectedFile]);
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -40,9 +40,10 @@ const App: React.FC = () => {
     setSelectedFile(file);
   };
 
+	// eslint-disable-next-line @typescript-eslint/no-unused-vars
   const uploadImage = async (title?: string, _description?: string) => {
     if (selectedFile) {
-      const encrypted = await t.encrypt(title || "no title");
+      const encrypted = await t.encrypt(title ?? "no title");
       await storeImage(selectedFile, title, JSON.stringify(encrypted));
       const updatedImages = await fetchImages();
       setImages(updatedImages);

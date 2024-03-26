@@ -14,7 +14,7 @@ const Authenticate = () => {
 
   useEffect(() => {
     async function handleOAuthRedirect() {
-      if (stytch && !user) {
+      if (!user) {
         const stytch_token_type = queryString.get("stytch_token_type");
         const token = queryString.get("token");
         if (token && stytch_token_type === OAUTH_TOKEN) {
