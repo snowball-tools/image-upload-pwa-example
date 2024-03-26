@@ -1,3 +1,4 @@
+import React from "react";
 import { CameraIcon } from "@heroicons/react/24/solid";
 
 const EmptyState: React.FC = () => (

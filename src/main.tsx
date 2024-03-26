@@ -1,10 +1,10 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
-import App from "./components/App.tsx";
 import { useRegisterSW } from "virtual:pwa-register/react";
 import { StytchProvider } from "@stytch/react";
 import { StytchUIClient } from "@stytch/vanilla-js";
 
+import App from "./components/App.tsx";
 import "./index.css";
 
 const AppUpdater: React.FC = () => {
