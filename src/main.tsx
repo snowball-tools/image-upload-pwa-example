@@ -1,17 +1,17 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
-import { useRegisterSW } from "virtual:pwa-register/react";
-import { StytchProvider } from "@stytch/react";
-import { StytchUIClient } from "@stytch/vanilla-js";
-
 import App from "./components/App.tsx";
+import { useRegisterSW } from "virtual:pwa-register/react";
+import { StytchProvider } from '@stytch/react';
+import { StytchUIClient } from '@stytch/vanilla-js';
+
 import "./index.css";
 
 const AppUpdater: React.FC = () => {
-  const intervalMS = 1000 * 60 * 60 // 1 hour;
+	const intervalMS = 1000 * 60 * 60; // 1 hour;
 
 	useRegisterSW({
-		onRegisteredSW(serviceWorkerUrl: string, serviceWorkerRegistration: ServiceWorkerRegistration | undefined) {
+		onRegisteredSW(swUrl, serviceWorkerRegistration) {
 			if (!serviceWorkerRegistration) return;
 
 			setInterval(() => {
@@ -20,7 +20,7 @@ const AppUpdater: React.FC = () => {
 					if ("connection" in navigator && !navigator.onLine) return;
 
 					try {
-						const resp = await fetch(serviceWorkerUrl, {
+						const resp = await fetch(swUrl, {
 							cache: "no-store",
 							headers: {
 								"cache-control": "no-cache",
@@ -38,10 +38,13 @@ const AppUpdater: React.FC = () => {
 		},
 	});
 
-  return null;
+	return null;
 };
 
-const stytchClient = new StytchUIClient("public-token-test-fb7aa946-fb42-46be-95ae-63505c0c5ff8");
+const stytchClient = new StytchUIClient(
+	"public-token-test-fb7aa946-fb42-46be-95ae-63505c0c5ff8",
+);
+
 const rootElement = document.getElementById("root");
 
 rootElement
