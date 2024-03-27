@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 
-import { ImageRecord } from "../hooks/useImageStorage";
+import { ImageRecord } from "../types";
 
 const ImageCard: React.FC<{
 	image: ImageRecord;
@@ -30,7 +30,7 @@ const ImageCard: React.FC<{
 			}
 		}
 		handle();
-	}, [text]);
+	}, [text, image]);
 
 	return (
 		<div key={index} className="w-full">
