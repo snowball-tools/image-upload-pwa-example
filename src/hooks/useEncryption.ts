@@ -2,13 +2,7 @@ import { useCallback } from "react";
 import { SessionSigs } from "@lit-protocol/types";
 import { LitAbility, LitActionResource } from "@lit-protocol/auth-helpers";
 import { encryptString, decryptToString } from "@lit-protocol/lit-node-client";
-import {
-	DecryptParams,
-	EncryptParams,
-	OperationParams,
-	Operations,
-	UseEncryptionParams,
-} from "../types";
+import { DecryptParams, EncryptParams, UseEncryptionParams } from "../types";
 
 export const useEncryption = () => {
 	const getSessionSigs = async (
@@ -35,49 +29,42 @@ export const useEncryption = () => {
 		return sessionSig;
 	};
 
-	const performOperation = useCallback(
-		async <T extends Operations>(
-			operation: T,
-			params: OperationParams[T],
-		): Promise<string> => {
+	const encrypt = useCallback(
+		async (params: EncryptParams): Promise<string> => {
 			const sessionSigs = await getSessionSigs(params);
 
-			switch (operation) {
-				case Operations.encrypt: {
-					const encryptParams = params as EncryptParams;
-					const result = await encryptString(
-						{
-							sessionSigs,
-							accessControlConditions: encryptParams.accessControlConditions,
-							dataToEncrypt: encryptParams.dataToEncrypt,
-							chain: "ethereum", // todo dynamic
-						},
-						encryptParams.provider.litNodeClient,
-					);
-					return result.ciphertext;
-				}
-				case Operations.decrypt: {
-					const decryptParams = params as DecryptParams;
-					const result = await decryptToString(
-						{
-							sessionSigs,
-							accessControlConditions: decryptParams.accessControlConditions,
-							ciphertext: decryptParams.ciphertext,
-							dataToEncryptHash: decryptParams.dataToDecryptHash,
-							chain: "ethereum", // todo dynamic
-						},
-						decryptParams.provider.litNodeClient,
-					);
-					return result;
-				}
-				default:
-					throw new Error("Unsupported operation.");
-			}
+			const result = await encryptString(
+				{
+					sessionSigs,
+					accessControlConditions: params.accessControlConditions,
+					dataToEncrypt: params.dataToEncrypt,
+					chain: "ethereum", // todo dynamic
+				},
+				params.provider.litNodeClient,
+			);
+			return result.ciphertext;
 		},
-		[],
+		[getSessionSigs],
 	);
 
-	return {
-		performOperation,
-	};
+	const decrypt = useCallback(
+		async (params: DecryptParams): Promise<string> => {
+			const sessionSigs = await getSessionSigs(params);
+
+			const result = await decryptToString(
+				{
+					sessionSigs,
+					accessControlConditions: params.accessControlConditions,
+					ciphertext: params.ciphertext,
+					dataToEncryptHash: params.dataToDecryptHash,
+					chain: "ethereum", // todo dynamic
+				},
+				params.provider.litNodeClient,
+			);
+			return result;
+		},
+		[getSessionSigs],
+	);
+
+	return { encrypt, decrypt };
 };

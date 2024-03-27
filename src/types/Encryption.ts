@@ -16,13 +16,3 @@ export interface DecryptParams extends UseEncryptionParams {
 	ciphertext: string;
 	dataToDecryptHash: string;
 }
-
-export enum Operations {
-	encrypt,
-	decrypt,
-}
-
-export interface OperationParams {
-	[Operations.encrypt]: EncryptParams;
-	[Operations.decrypt]: DecryptParams;
-}

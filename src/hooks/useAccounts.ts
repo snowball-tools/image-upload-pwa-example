@@ -9,7 +9,6 @@ import {
 } from "@lit-protocol/types";
 import { useStytchUser, useStytch } from "@stytch/react";
 import { useEncryption } from "./useEncryption";
-import { Operations } from "../types";
 
 const accessControlConditions: AccessControlConditions = [
 	{
@@ -38,7 +37,7 @@ export const useAccounts = () => {
 	const [pkps, setPkps] = useState<IRelayPKP[] | IRelayPollStatusResponse[]>(
 		[],
 	);
-	const { performOperation } = useEncryption();
+	const encryption = useEncryption();
 
 	useEffect(() => {
 		async function handle() {
@@ -112,7 +111,7 @@ export const useAccounts = () => {
 				return;
 			}
 
-			const encrypted = await performOperation(Operations.encrypt, {
+			const encrypted = await encryption.encrypt({
 				provider,
 				pkp,
 				dataToEncrypt,
@@ -135,7 +134,7 @@ export const useAccounts = () => {
 				return;
 			}
 
-			const decrypted = await performOperation(Operations.decrypt, {
+			const decrypted = await encryption.decrypt({
 				provider,
 				pkp,
 				authMethod,
